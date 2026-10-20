@@ -4,7 +4,7 @@
 
 A local VAR library manager for **Virt-A-Mate (VaM)** on Windows. Organize resources, resolve dependencies, prepare launch profiles, and optionally use AI to describe and explore your collection.
 
-**Version 1.0.0** · **Windows x64** · [MIT License](LICENSE)
+**Version 1.0.0** · **Windows 10 / 11** · [MIT License](LICENSE)
 
 ![English home page with customizable library cards](docs/images/home-en.png)
 
@@ -88,7 +88,7 @@ Eight pages beyond Home, grouped by workflow. Click any screenshot to view it at
 
 | Use | Requirements |
 | --- | --- |
-| Manage a library | Windows x64, a local VaM installation containing `AddonPackages`, and a modern browser |
+| Manage a library | Windows 10 (x86/x64) or Windows 11 (x64), a local VaM installation containing `AddonPackages`, and a modern browser |
 | Run from source | Python 3.13; the backend uses the standard library |
 | Build the Windows launcher | Windows PowerShell and the .NET Framework 4.x C# compiler used by `tools/build.ps1` |
 | Develop/test the Web UI | Node.js 20+ and npm; unnecessary for ordinary app use |
@@ -120,6 +120,17 @@ The preparation scripts download pinned distributions and verify their hashes. T
 ### Portable packages
 
 This source repository does **not** contain an EXE or runtime. If a portable archive is provided in the repository's **Releases** section, extract the complete application folder and launch `VaMPackageManager.exe`. GitHub's automatically generated **Source code** archives are not portable builds.
+
+The portable release uses these architecture-specific filenames:
+
+| Archive | Target |
+| --- | --- |
+| `VaMPackageManager-1.0.0-windows-x64.zip` | Windows 10/11 x64; preferred for 64-bit PCs and large libraries |
+| `VaMPackageManager-1.0.0-windows-x86.zip` | Windows 10 32-bit; also runs as a 32-bit process on x64 Windows |
+
+Both packages include Python and require no Python or Node.js installation. Codex CLI remains optional and is not bundled. `tools/prepare_runtime.py` prepares x64 by default; the x86 release uses the corresponding official 32-bit Python embeddable runtime. The matching `VaMPackageManager-1.0.0-SHA256SUMS.txt` contains archive hashes.
+
+Both runtime architectures were tested on Windows 11 x64, including EXE startup and 56 focused checks per architecture. Windows 10 and a native 32-bit OS have not been directly tested. Architecture compatibility refers to this manager; VaM and external AI tools have their own requirements.
 
 Placing the application folder directly inside a VaM root lets the launcher discover that root initially. Additional game directories can be added in **AI & Settings → Game directories**.
 

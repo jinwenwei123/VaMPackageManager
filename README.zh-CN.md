@@ -4,7 +4,7 @@
 
 面向 Windows 的 **Virt-A-Mate（VaM）** 本地 VAR 资源管理工具。整理资源、检查依赖、配置启动方案，也可以通过可选的 AI 功能生成简介、标签和资源推荐。
 
-**版本 1.0.0** · **Windows x64** · [MIT 开源许可](LICENSE)
+**版本 1.0.0** · **Windows 10 / 11** · [MIT 开源许可](LICENSE)
 
 ![中文主页：可自定义的资源信息卡片](docs/images/home-zh.png)
 
@@ -88,7 +88,7 @@
 
 | 用途 | 要求 |
 | --- | --- |
-| 管理资源 | Windows x64、包含 `AddonPackages` 的本地 VaM 安装目录及现代浏览器 |
+| 管理资源 | Windows 10（x86/x64）或 Windows 11（x64）、包含 `AddonPackages` 的本地 VaM 安装目录及现代浏览器 |
 | 从源码运行 | Python 3.13；后端仅使用标准库 |
 | 编译 Windows 启动器 | Windows PowerShell，以及 `tools/build.ps1` 使用的 .NET Framework 4.x C# 编译器 |
 | 开发和测试 Web 界面 | Node.js 20+ 与 npm；日常使用不需要 |
@@ -120,6 +120,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\build.ps1
 ### 便携发行包
 
 源码仓库**不包含 EXE 或运行时**。如果维护者在仓库的 **Releases** 页面提供便携压缩包，请完整解压应用文件夹，再打开 `VaMPackageManager.exe`。GitHub 自动提供的 **Source code** 压缩包是源码，不是编译后的便携程序。
+
+便携发行包按架构命名：
+
+| 压缩包 | 适用环境 |
+| --- | --- |
+| `VaMPackageManager-1.0.0-windows-x64.zip` | Windows 10/11 x64；64 位电脑与大型资源库优先使用 |
+| `VaMPackageManager-1.0.0-windows-x86.zip` | 32 位 Windows 10；也可作为 32 位程序运行于 x64 Windows |
+
+两版均内置 Python，无需安装 Python 或 Node.js；可选的 Codex CLI 未内置。`tools/prepare_runtime.py` 默认准备 x64 运行时，x86 发行包使用对应的官方 32 位 Python 嵌入式运行时。`VaMPackageManager-1.0.0-SHA256SUMS.txt` 提供压缩包校验值。
+
+两种运行时均已在 Windows 11 x64 上完成 EXE 启动与每版 56 项专项检查；尚未在 Windows 10 或原生 32 位系统上实测。架构兼容指包管家，VaM 与外部 AI 工具有各自要求。
 
 将应用文件夹放在 VaM 游戏根目录内，可在首次启动时自动找到该游戏；其他游戏目录可在 **AI 与设置 → 游戏目录** 中添加。
 
