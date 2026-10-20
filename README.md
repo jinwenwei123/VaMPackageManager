@@ -131,6 +131,8 @@ Placing the application folder directly inside a VaM root lets the launcher disc
 4. Create a launch profile, review its activation preview, and apply it. Saving a profile alone does not activate it.
 5. Launch VaM after file operations finish. Use **History** for supported restoration, or **Duplicates → Quarantine** to inspect isolated copies.
 
+**Updating the index also synchronizes activation.** In a new game directory with no applied launch mode, ordinary packages are moved to the disabled library; pinned base packages and their available dependencies stay enabled. To keep all packages enabled, use **Launch profiles → Enable all packages**, review the plan, and apply it. Later scans follow that mode until you change it. Close VaM before scanning as well as before other file operations.
+
 **Permanently clearing quarantine bypasses the Recycle Bin and cannot be undone.** Keep backups before large reorganizations; operation history does not replace a backup.
 
 ## AI setup
