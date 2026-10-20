@@ -1,0 +1,18 @@
+.selection-slot{margin:10px 0 15px;position:relative}
+.selection-slot .selectionbar{margin:0}
+.selectionbar.is-floating{position:fixed;left:var(--selection-left);top:var(--selection-top);width:var(--selection-width);z-index:8;border-radius:18px;background:color-mix(in srgb,var(--green-light) 74%,transparent);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:0 8px 30px #00000016;border-color:color-mix(in srgb,var(--green) 28%,transparent)}
+.category-badges{display:flex;flex-wrap:wrap;gap:4px;flex:0 0 110px;max-width:140px;align-content:center}
+.category-badges .package-category{min-width:0;padding:5px 7px;font-size:11px}
+.grid-view .category-badges,.recommendation-content>.category-badges{position:static;max-width:none;height:27px;min-width:0;flex-basis:auto;align-items:center;flex-wrap:nowrap;margin:6px 0}
+.grid-view .category-badges .package-category,.recommendation-card .category-badges .package-category{position:static;padding:4px 5px;gap:3px;flex-shrink:1;overflow:hidden}
+.category-more{flex-shrink:0;display:inline-flex;align-items:center;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--secondary);font-size:11px}
+.detail-categories{max-width:none;flex-basis:auto}
+.profile.is-default{border-color:var(--accent-line)}
+.pin-mark{display:inline-flex;flex-shrink:0;align-items:center;font-size:10px;padding:3px 5px;border-radius:6px;background:var(--panel);color:var(--green);border:1px solid var(--line)}
+.grid-view .pin-mark{position:absolute;left:10px;top:42px;z-index:2}
+.selectionbar{flex-wrap:wrap;gap:8px}
+.selectionbar>.buttons{flex-wrap:wrap;margin-left:auto}
+@media(max-width:760px){.category-badges{flex-basis:72px;max-width:86px}.selectionbar.is-floating{padding:10px;border-radius:14px}.selectionbar .buttons{gap:5px}.selectionbar .button{padding:7px 9px}}
+
+.grid-view .category-name,.recommendation-card .category-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid-view .package-category>span[aria-hidden],.recommendation-card .package-category>span[aria-hidden]{flex-shrink:0}

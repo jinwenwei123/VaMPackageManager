@@ -1,0 +1,38 @@
+.brand-icon{flex-shrink:0;display:block}
+.pagination-slot{display:flex;justify-content:center;align-items:center;height:56px;margin:26px 0 4px;position:relative}
+.pagination{
+  display:flex;align-items:center;justify-content:center;gap:5px;margin:0;padding:8px 10px;
+  height:56px;width:max-content;max-width:100%;border-radius:999px;
+  color:var(--ink);background:color-mix(in srgb,var(--panel) 92%,transparent);
+  border:1px solid color-mix(in srgb,var(--line) 85%,transparent);
+  box-shadow:0 3px 14px #101b1510;isolation:isolate;
+}
+.pagination.is-floating{
+  position:fixed;left:var(--pager-left);bottom:var(--pager-bottom,18px);
+  transform:translateX(-50%);max-width:var(--pager-width);z-index:10;
+  background:color-mix(in srgb,var(--panel) 76%,transparent);
+  border-color:color-mix(in srgb,var(--line) 68%,transparent);
+  box-shadow:0 8px 28px #0e201b1c,inset 0 1px 0 #ffffff32;
+  backdrop-filter:blur(12px) saturate(1.08);-webkit-backdrop-filter:blur(12px) saturate(1.08);
+}
+[data-mode=dark] .pagination.is-floating{box-shadow:0 8px 28px #0005,inset 0 1px 0 #ffffff0b}
+.pager-button{
+  width:36px;height:36px;flex-shrink:0;padding:8px;display:grid;place-items:center;
+  border:0;border-radius:50%;background:transparent;color:var(--secondary);
+}
+.pager-button svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pager-button:hover:not(:disabled){background:var(--green-light);color:var(--green)}
+.pager-button:active:not(:disabled){background:var(--accent)}
+.pager-button:disabled{opacity:.3}
+.pager-jump{display:flex;align-items:center;justify-content:center;gap:7px;margin:0 7px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pager-jump input{
+  width:4.4em;min-width:36px;height:32px;border:1px solid transparent;border-radius:8px;
+  padding:5px 4px;text-align:center;background:color-mix(in srgb,var(--green) 9%,transparent);
+  color:var(--green);font-weight:650;font-variant-numeric:tabular-nums;
+}
+.pager-jump input:hover,.pager-jump input:focus{border-color:var(--accent-line)}
+.pager-jump span{color:var(--secondary)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#library-results,#missing-panel{scroll-margin-top:18px}
+@media(max-width:480px){.pagination{gap:2px;padding:8px}.pager-button{width:32px;height:34px;padding:6px}.pager-jump{margin:0 3px;gap:4px}.pager-jump input{width:3.7em}}
+@supports not (backdrop-filter:blur(1px)){.pagination.is-floating{background:color-mix(in srgb,var(--panel) 94%,transparent)}}

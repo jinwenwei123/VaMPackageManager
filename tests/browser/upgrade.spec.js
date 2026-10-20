@@ -1,0 +1,74 @@
+const {test,expect}=require('@playwright/test');
+const fs=require('fs');
+
+test('cover list/grid keeps selections, remembers view and splits Codex models',async({page})=>{
+  const {url,token}=JSON.parse(fs.readFileSync('test-results/ui-server.json','utf8'));
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(url+'/#'+token);await page.locator('#navigation [data-page="library"]').click();
+  await page.getByLabel('搜索资源').fill('Luna');
+  await expect(page.locator('.package-row')).toHaveCount(1);
+  await expect(page.locator('.package-art img')).toBeVisible();
+  expect(await page.locator('.package-art img').evaluate(e=>e.naturalWidth)).toBeGreaterThan(0);
+  await page.getByLabel('选择 Luna').check();
+  await page.getByRole('button',{name:'⊞ 大图',exact:true}).click();
+  await expect(page.locator('.package-list')).toHaveClass(/grid-view/);
+  await expect(page.getByLabel('选择 Luna')).toBeChecked();
+  await expect(page.locator('.package-art img')).toBeVisible();
+  await page.getByLabel('搜索资源').fill('');
+  await expect(page.locator('.package-row')).not.toHaveCount(1);
+  await page.screenshot({path:'test-results/封面大图预览.png',fullPage:true});
+  await page.reload();await page.locator('#navigation [data-page="library"]').click();
+  await expect(page.getByRole('button',{name:'⊞ 大图',exact:true})).toHaveAttribute('aria-pressed','true');
+  await page.setViewportSize({width:760,height:900});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+  await page.getByRole('button',{name:'☷ 列表',exact:true}).click();
+  await expect(page.locator('.package-list')).not.toHaveClass(/grid-view/);
+  await page.getByRole('button',{name:'⚙ AI 与设置'}).click();
+  await page.locator('#ai-provider').selectOption('codex');
+  await expect(page.locator('[name=codex_model]')).toHaveValue('gpt-6.1-sol');
+  await expect(page.locator('[name=codex_summary_model]')).toHaveValue('gpt-6-luna');
+  await page.getByRole('button',{name:'保存设置',exact:true}).click();
+  expect(errors).toEqual([]);
+});
+
+test('assistant renders Markdown safely and configured source editor works',async({page})=>{
+  const {url,token}=JSON.parse(fs.readFileSync('test-results/ui-server.json','utf8'));
+  await page.goto(url+'/#'+token);
+  await page.getByRole('button',{name:'✧ 对话助手'}).click();
+  await page.getByRole('button',{name:'新对话',exact:true}).click();
+  await page.getByLabel('发送给助手的消息').fill('测试 Markdown 推荐');
+  await page.getByRole('button',{name:'发送 ↑'}).click();
+  const body=page.locator('.chat-message.assistant .chat-body');
+  await expect(body.locator('h2')).toHaveText('推荐本地 Luna');
+  await expect(body.locator('table')).toBeVisible();
+  await expect(body.locator('pre code')).toContainText('示例文本');
+  await expect(body.locator('a[href="https://example.com"]')).toHaveAttribute('rel','noopener noreferrer');
+  await expect(body.locator('script,img,a[href^="javascript:"]')).toHaveCount(0);
+  expect(await page.evaluate(()=>window.mdUnsafe)).toBeUndefined();
+  await expect(page.locator('#chat-send')).toBeEnabled();
+  await page.screenshot({path:'test-results/Markdown对话预览.png',fullPage:true});
+  await page.getByRole('button',{name:'⛓ 依赖检查'}).click();
+  await page.getByRole('button',{name:'下载来源',exact:true}).click();
+  await page.locator('#source-form [name=name]').fill('作者官网');
+  await page.locator('#source-form [name=prefix]').fill('Author.*');
+  await page.locator('#source-form [name=url]').fill('https://author.example/releases');
+  await page.getByRole('button',{name:'添加来源',exact:true}).click();
+  await expect(page.locator('.source-rows')).toContainText('作者官网');
+  await page.getByRole('button',{name:'移除',exact:true}).click();
+  await expect(page.locator('.source-rows .operation')).toHaveCount(0);
+});
+
+test('dependency page displays current counts, successful installs and new dependencies',async({page})=>{
+  const {url,token}=JSON.parse(fs.readFileSync('test-results/ui-server.json','utf8'));
+  let left=2;
+  await page.route('**/api/sources',route=>route.fulfill({json:{created:'2026-10-19',ready:[],unresolved:Array.from({length:left},(_,i)=>({ref:'A.Asset'+i+'.1'})),global_missing_count:left,last_install:{created:'2026-10-19',installed:3,failed:1,resolved:3,new_missing:1,items:[{filename:'A.Fail.1.var',status:'error',error:'测试网络失败'}]}}}));
+  await page.goto(url+'/#'+token);
+  await page.getByRole('button',{name:'⛓ 依赖检查'}).click();
+  await expect(page.locator('.stat').filter({hasText:'缺失依赖'}).locator('.stat-value')).toHaveText('2');
+  await expect(page.locator('.download-result')).toContainText('已保存 3 个包');
+  await expect(page.locator('.download-result')).toContainText('新发现 1 项依赖');
+  left=1;
+  await page.reload();
+  await page.getByRole('button',{name:'⛓ 依赖检查'}).click();
+  await expect(page.locator('.stat').filter({hasText:'缺失依赖'}).locator('.stat-value')).toHaveText('1');
+});

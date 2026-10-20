@@ -1,0 +1,58 @@
+const {test,expect}=require('@playwright/test');
+const fs=require('fs');
+
+test('large selections stay paged and search preserves focus and newest result',async({page})=>{
+  const {url,token}=JSON.parse(fs.readFileSync('test-results/ui-server.json','utf8'));
+  await page.addInitScript(()=>localStorage.setItem('vampm-selection',JSON.stringify(Array.from({length:10000},(_,i)=>`fixture.item${i}.1`))));
+  await page.goto(url+'/#'+token);await page.locator('#navigation [data-page="library"]').click();
+  await page.getByRole('heading',{name:'资源库',exact:true}).waitFor();
+  await page.getByRole('button',{name:'▷ 启动方案',exact:true}).click();
+  await expect(page.locator('.selected-item')).toHaveCount(60);
+  await page.locator('#profile-name').fill('保留输入');
+  await page.getByRole('button',{name:'下一页',exact:true}).click();
+  await expect(page.locator('#profile-name')).toHaveValue('保留输入');
+  expect(await page.locator('#main *').count()).toBeLessThan(450);
+  await page.getByRole('button',{name:/⊞.*资源库/}).click();
+  const input=page.getByLabel('搜索资源');
+  await input.evaluate(el=>el.dataset.preserved='yes');
+  await input.fill('Luna');
+  await expect(page.locator('.package-row')).toHaveCount(1);
+  await expect(input).toBeFocused();
+  await expect(input).toHaveAttribute('data-preserved','yes');
+  await input.fill('Garden');
+  await page.waitForTimeout(130);
+  await input.fill('CottonDress');
+  await expect(page.locator('.package-row')).toHaveCount(1);
+  await expect(page.locator('.package-name button')).toHaveText('CottonDress');
+  await expect(input).toBeFocused();
+});
+
+test('chat streams, calls real profile API, retains conversation and supports narrow screens',async({page})=>{
+  const {url,token}=JSON.parse(fs.readFileSync('test-results/ui-server.json','utf8'));
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.request.post(url+'/api/settings',{headers:{'X-Session-Token':token},data:{provider:'codex'}});
+  const reset=await page.request.post(url+'/api/agent/reset',{headers:{'X-Session-Token':token},data:{}});
+  expect(reset.ok()).toBeTruthy();
+  await page.goto(url+'/#'+token);
+  await page.getByRole('button',{name:'✧ 对话助手'}).click();
+  await page.getByRole('heading',{name:'对话助手',exact:true}).waitFor();
+  await page.getByLabel('发送给助手的消息').fill('推荐一个人物包');
+  await page.getByRole('button',{name:'发送 ↑'}).click();
+  await expect(page.locator('.chat-message.assistant')).toContainText('推荐本地 Luna');
+  await expect(page.locator('#chat-send')).toBeEnabled();
+  await page.getByLabel('发送给助手的消息').fill('创建启动方案');
+  await page.getByLabel('发送给助手的消息').press('Enter');
+  await expect(page.locator('.chat-message.assistant').last()).toContainText('已创建助手测试方案');
+  await expect(page.locator('#chat-send')).toBeEnabled();
+  await expect(page.locator('#dialog')).not.toBeVisible();
+  await page.screenshot({path:'test-results/对话助手预览.png',fullPage:true});
+  await page.getByRole('button',{name:'▷ 启动方案',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'助手测试方案'})).toBeVisible();
+  await page.getByRole('button',{name:'✧ 对话助手'}).click();
+  await expect(page.locator('.chat-message.assistant')).toHaveCount(2);
+  await page.setViewportSize({width:760,height:900});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+  await page.getByRole('button',{name:'新对话',exact:true}).click();
+  await expect(page.locator('.chat-message')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

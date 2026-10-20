@@ -1,0 +1,31 @@
+const {test,expect}=require('@playwright/test');
+const fs=require('fs'),path=require('path'),crypto=require('crypto');
+const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+test('JSON repair preview shows typed groups, diff, skipped ZIP and reversible repair',async({page})=>{
+  const {url,token,fixtureAddon,fixtureVault}=JSON.parse(fs.readFileSync('test-results/ui-server.json','utf8'));
+  const headers={'X-Session-Token':token},errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const get=async r=>(await page.request.get(url+'/api/'+r,{headers})).json();
+  const post=async(r,data)=>{
+    const response=await page.request.post(url+'/api/'+r,{headers,data});expect(response.ok()).toBe(true);const out=await response.json();
+    if(out.status!=='running')return out;
+    await expect.poll(async()=>(await get('job?id='+out.id)).status,{timeout:20000}).toBe('done');return (await get('job?id='+out.id)).result;
+  };
+  const file=path.join(fixtureAddon,'Repair.Json.1.var');fs.copyFileSync('test-results/Repair.Json.1.var',file);
+  fs.writeFileSync(path.join(fixtureAddon,'Repair.Broken.1.var'),'not a ZIP');
+  await post('scan',{});const before=await get('package?key=repair.json.1');const row=before.files[0];
+  const actual=path.join(row.area==='active'?fixtureAddon:fixtureVault,row.rel),digest=hash(actual);
+  await page.goto(url+'/#'+token);await page.getByRole('button',{name:'⛓ 依赖检查',exact:true}).click();
+  await page.getByRole('button',{name:/分.*析|重新 AI 分析|继续分析/}).filter({hasText:/分析与修复|重新 AI 分析|继续分析/}).click();
+  const dialog=page.locator('#dialog');await expect(dialog).toContainText('预览包异常修复');
+  await expect(dialog).toContainText('meta.json 语法');await expect(dialog).toContainText('JSON 校验通过');
+  await dialog.getByText('查看 JSON 修改差异',{exact:true}).click();await expect(dialog.locator('.repair-diff')).toContainText('修复后 meta.json');
+  await dialog.getByText(/其他问题 \/ 暂不支持/).click();await expect(dialog).toContainText('ZIP 容器损坏');
+  await dialog.locator('[data-package-repair-all]').uncheck();
+  await dialog.locator('[data-repair-type=json] [data-package-repair-select]').check();
+  await page.screenshot({path:'test-results/包异常修复-JSON差异.png'});
+  await dialog.getByRole('button',{name:'执行所选修复'}).click();await expect(dialog).toContainText('包异常修复完成');
+  const after=await get('package?key=repair.json.1');expect(after.error).toBe('');expect(after.files[0].id).toBe(row.id);expect(hash(actual)).not.toBe(digest);
+  await dialog.getByRole('button',{name:'完成',exact:true}).click();
+  const history=(await get('history')).find(x=>x.kind==='repair_json');await post('undo',{id:history.id});expect(hash(actual)).toBe(digest);
+  expect(errors).toEqual([]);
+});

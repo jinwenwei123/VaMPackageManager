@@ -1,0 +1,37 @@
+const {test,expect}=require('@playwright/test');
+const fs=require('fs'),path=require('path'),crypto=require('crypto');
+const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+
+test('dependency page repairs only malformed names using summary model and supports undo',async({page})=>{
+  const {url,token,fixtureAddon,fixtureVault}=JSON.parse(fs.readFileSync('test-results/ui-server.json','utf8'));
+  const headers={'X-Session-Token':token},errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const get=async r=>(await page.request.get(url+'/api/'+r,{headers})).json();
+  const done=async j=>{await expect.poll(async()=>(await get('job?id='+j.id)).status,{timeout:15000}).toBe('done');return (await get('job?id='+j.id)).result;};
+  const post=async(r,data)=>{const response=await page.request.post(url+'/api/'+r,{headers,data});expect(response.ok()).toBe(true);const out=await response.json();return out.status==='running'?done(out):out;};
+  const folder=path.join(fixtureAddon,'修复测试');fs.mkdirSync(folder,{recursive:true});
+  const malformed=path.join(folder,'Repair.Look.2_2.var'),canonical=path.join(fixtureAddon,'Repair.Look.2.var');
+  fs.copyFileSync('test-results/Repair.Look.2.var',malformed);fs.copyFileSync('test-results/Repair.Look.2.var',canonical);
+  const digest=hash(malformed);await post('scan',{});
+  const old=await get('package?key=repair.look.2_2'),original=path.join(old.files[0].area==='active'?fixtureAddon:fixtureVault,old.files[0].rel);
+  await page.goto(url+'/#'+token);await page.getByRole('button',{name:'⛓ 依赖检查',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'包异常修复'})).toBeVisible();
+  await page.getByRole('button',{name:'✧ 分析与修复'}).click();
+  const dialog=page.locator('#dialog');await expect(dialog).toContainText('预览包异常修复');
+  await expect(dialog).toContainText('gpt-6-luna');await expect(dialog).toContainText('已有同名包');
+  await expect(dialog.locator('[data-name-repair-filename]')).toHaveValue('Repair.Look.2.var');
+  expect(fs.existsSync(original)).toBe(true);
+  await dialog.locator('[data-package-repair-all]').uncheck();await expect(dialog.locator('[data-package-repair-select]')).not.toBeChecked();
+  await dialog.locator('[data-package-repair-all]').check();
+  await page.screenshot({path:'test-results/依赖检查-包名修复预览.png'});
+  await dialog.getByRole('button',{name:'执行所选修复'}).click();
+  await expect(page.getByRole('heading',{name:'包异常修复完成'})).toBeVisible();
+  const repaired=await get('package?key=repair.look.2');expect(repaired.error).toBe('');expect(repaired.copies).toBe(2);
+  expect(fs.existsSync(original)).toBe(false);
+  for(const file of repaired.files)expect(hash(path.join(file.area==='active'?fixtureAddon:fixtureVault,file.rel))).toBe(digest);
+  expect(repaired.files.find(x=>x.id===old.files[0].id).area).toBe(old.files[0].area);
+  await page.screenshot({path:'test-results/依赖检查-包名修复完成.png'});
+  await dialog.getByRole('button',{name:'完成',exact:true}).click();
+  const history=(await get('history')).find(x=>x.kind==='repair_names');await post('undo',{id:history.id});
+  expect(hash(original)).toBe(digest);expect((await get('name-repairs')).eligible).toBe(1);
+  await expect(dialog).not.toBeVisible();expect(errors).toEqual([]);
+});
