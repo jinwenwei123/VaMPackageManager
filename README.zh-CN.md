@@ -10,7 +10,7 @@
 
 *截图来自实际运行的应用，使用独立的模拟演示资源库，不包含个人资源库、凭据或第三方游戏素材。*
 
-[功能](#功能) · [开始使用](#开始使用) · [AI 设置](#ai-设置) · [数据位置与备份](#数据位置与备份) · [开发](#开发) · [开源许可](#开源许可)
+[功能](#功能) · [界面导览](#界面导览) · [开始使用](#开始使用) · [AI 设置](#ai-设置) · [数据位置与备份](#数据位置与备份) · [开发](#开发) · [开源许可](#开源许可)
 
 ## 功能
 
@@ -22,12 +22,65 @@
 - **可选 AI 辅助**：分别或同时生成简介与标签，推荐资源，并通过保留上下文的助手继续对话。支持只读推荐及受支持的资源管理操作。
 - **界面自定义**：可增删、排列的主页卡片，六种配色，浅色/深色/跟随系统，以及中英文界面。切换语言仅影响界面和后续 AI 输出，已有用户内容及文件名保持原样。
 
-<details>
-<summary>查看资源库截图</summary>
+## 界面导览
 
-![中文资源库：分类、简介、标签、收藏及启停筛选](docs/images/library-zh.png)
+除主页外的 8 个页面，按用途分为两组四宫格。点击任意截图可查看原图。设置截图展示页面顶部，向下滚动还可配置外观和 AI。
 
-</details>
+### 浏览与发现
+<table>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/images/favorites-zh.png"><img src="docs/images/favorites-zh.png" alt="收藏夹 — 中文界面" width="720"></a>
+<strong>收藏夹</strong>
+<p>集中查看常用资源，按条件筛选收藏，并一键归档，无需逐个选择。</p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/images/library-zh.png"><img src="docs/images/library-zh.png" alt="资源库 — 中文界面" width="720"></a>
+<strong>资源库</strong>
+<p>使用列表或封面网格浏览资源，搜索简介与标签，查看详情并管理启停状态。</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/images/assistant-zh.png"><img src="docs/images/assistant-zh.png" alt="对话助手 — 中文界面" width="720"></a>
+<strong>对话助手</strong>
+<p>通过连续对话了解资源库，使用内置提问预设，也可开启只读推荐。</p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/images/dependencies-zh.png"><img src="docs/images/dependencies-zh.png" alt="依赖检查 — 中文界面" width="720"></a>
+<strong>依赖检查</strong>
+<p>查看缺失包及引用来源，配置下载来源，并审查受支持的异常修复建议。</p>
+</td>
+</tr>
+</table>
+
+### 维护与配置
+<table>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/images/duplicates-zh.png"><img src="docs/images/duplicates-zh.png" alt="重复清理与隔离区 — 中文界面" width="720"></a>
+<strong>重复清理与隔离区</strong>
+<p>校验文件内容后再清理重复副本，查看隔离批次，按需恢复或永久删除。</p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/images/profiles-zh.png"><img src="docs/images/profiles-zh.png" alt="启动方案 — 中文界面" width="720"></a>
+<strong>启动方案</strong>
+<p>保存固定资源组合，或跟随收藏和文件夹；预览启用时自动包含可用依赖。</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/images/history-zh.png"><img src="docs/images/history-zh.png" alt="操作记录 — 中文界面" width="720"></a>
+<strong>操作记录</strong>
+<p>回看文件操作与执行结果，恢复受支持的改动，并查看依赖下载记录。</p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/images/settings-zh.png"><img src="docs/images/settings-zh.png" alt="AI 与设置 — 中文界面" width="720"></a>
+<strong>AI 与设置</strong>
+<p>切换游戏目录和界面语言，调整外观，并配置 AI 服务与模型。</p>
+</td>
+</tr>
+</table>
 
 ## 开始使用
 

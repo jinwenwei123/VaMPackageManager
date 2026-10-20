@@ -10,7 +10,7 @@ A local VAR library manager for **Virt-A-Mate (VaM)** on Windows. Organize resou
 
 *Screenshots show the running application with a synthetic demonstration library. No personal library, credentials, or third-party game assets are shown.*
 
-[Features](#features) · [Getting started](#getting-started) · [AI setup](#ai-setup) · [Storage and backups](#storage-and-backups) · [Development](#development) · [License](#license)
+[Features](#features) · [Interface tour](#interface-tour) · [Getting started](#getting-started) · [AI setup](#ai-setup) · [Storage and backups](#storage-and-backups) · [Development](#development) · [License](#license)
 
 ## Features
 
@@ -22,12 +22,65 @@ A local VAR library manager for **Virt-A-Mate (VaM)** on Windows. Organize resou
 - **Use AI when needed:** generate descriptions and tags separately or together, get resource recommendations, and chat with an assistant that retains context. Choose read-only recommendations or allow supported management actions.
 - **Make the interface yours:** customizable home cards, six color palettes, light/dark/system appearance, and English or Simplified Chinese. Language changes affect the UI and newly generated AI content; existing user content and filenames stay unchanged.
 
-<details>
-<summary>Library preview</summary>
+## Interface tour
 
-![English resource library with categories, descriptions, tags, favorites, and status filters](docs/images/library-en.png)
+Eight pages beyond Home, grouped by workflow. Click any screenshot to view it at full size. Settings is shown at the top of the page; appearance and AI controls continue below.
 
-</details>
+### Browse and discover
+<table>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/images/favorites-en.png"><img src="docs/images/favorites-en.png" alt="Favorites — English interface" width="720"></a>
+<strong>Favorites</strong>
+<p>Keep frequently used packages together, filter your collection, and archive favorites in one action.</p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/images/library-en.png"><img src="docs/images/library-en.png" alt="Library — English interface" width="720"></a>
+<strong>Library</strong>
+<p>Browse resources in lists or cover grids; search descriptions and tags, inspect details, and manage activation.</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/images/assistant-en.png"><img src="docs/images/assistant-en.png" alt="Assistant — English interface" width="720"></a>
+<strong>Assistant</strong>
+<p>Explore your library through a conversation, start with built-in prompts, and choose read-only recommendations when needed.</p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/images/dependencies-en.png"><img src="docs/images/dependencies-en.png" alt="Dependencies — English interface" width="720"></a>
+<strong>Dependencies</strong>
+<p>See missing packages and what references them, configure download sources, and review supported repair suggestions.</p>
+</td>
+</tr>
+</table>
+
+### Maintain and configure
+<table>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/images/duplicates-en.png"><img src="docs/images/duplicates-en.png" alt="Duplicates & quarantine — English interface" width="720"></a>
+<strong>Duplicates & quarantine</strong>
+<p>Verify duplicate content before cleanup, inspect quarantined batches, and restore or permanently remove them.</p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/images/profiles-en.png"><img src="docs/images/profiles-en.png" alt="Launch profiles — English interface" width="720"></a>
+<strong>Launch profiles</strong>
+<p>Save resource selections or follow favorites and folders; preview activation with available dependencies included.</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/images/history-en.png"><img src="docs/images/history-en.png" alt="History — English interface" width="720"></a>
+<strong>History</strong>
+<p>Review file operations and their results, restore supported changes, and inspect dependency download records.</p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/images/settings-en.png"><img src="docs/images/settings-en.png" alt="AI & Settings — English interface" width="720"></a>
+<strong>AI & Settings</strong>
+<p>Switch game directories and interface language, customize appearance, and configure AI providers and models.</p>
+</td>
+</tr>
+</table>
 
 ## Getting started
 
