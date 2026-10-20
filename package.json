@@ -1,7 +1,7 @@
 {
   "name": "vam-package-manager-ui-tests",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Development-only browser checks; not required by the portable app",
   "scripts": {
     "test:ui": "playwright test"

@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 [assembly: AssemblyTitle("VaM Package Manager")]
 [assembly: AssemblyDescription("VaM local package library manager")]
-[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
 internal static class Launcher
 {
     [STAThread]

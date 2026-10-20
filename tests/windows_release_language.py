@@ -46,7 +46,7 @@ try:
     assert state is not None, 'EXE did not start the service'
     status = json.loads(request('/api/status'))
     assert status['language'] == {'language': 'en'}
-    assert status['version'] == '1.0.0'
+    assert status['version'] == '1.0.1'
     assert status['workspace']['id'] is None
     assert status['onboarding']['stage'] == 'game'
     assert status['game_directories']['items'] == []

@@ -182,9 +182,64 @@ class FolderImportTests(unittest.TestCase):
             q=urllib.parse.urlencode({'name':'说明.txt','relative_path':'人物/说明.txt'})
             result=request('upload?'+q,b'notes','application/octet-stream')
             self.assertTrue((app.importer.staging/(result['id']+'.bin')).exists())
-            request('discard-import',json.dumps({'ids':[result['id']]}).encode())
+            session=request('import-session',b'{}')['session']
+            request('import-session/append',json.dumps({'session':session,'ids':[result['id']]}).encode())
+            request('import-session/discard',json.dumps({'session':session}).encode())
             self.assertFalse(list(app.importer.staging.iterdir()))
         finally:server.shutdown();server.server_close();t.join()
+
+    def test_large_session_preserves_folder_and_cleans_all_batches(self):
+        imp=self.importer()
+        session=imp.create_session()['session']
+        contents={'合集/New.Look.1.var':var_bytes('New.Look.1'),
+                  '合集/说明.txt':b'notes','合集/封面.png':b'cover'}
+        ids=[self.upload(imp,p,b) for p,b in contents.items()]
+        with mock.patch('vampm.importer.MAX_IMPORT_FILES',2):
+            imp.append_session(session,ids[:2])
+            imp.append_session(session,ids[2:])
+            result=imp.run_session(session,Job('import'),False,False)
+        self.assertEqual((result['installed'],result['attachments']),(1,2))
+        for rel,data in contents.items():
+            self.assertEqual((self.c.roots['vault']/'包管家导入'/rel).read_bytes(),data)
+        self.assertFalse(list(imp.staging.iterdir()))
+
+    def test_session_over_10000_ids_reaches_import_as_one_task(self):
+        imp=self.importer()
+        session=imp.create_session()['session']
+        ids=[f'{i:032x}' for i in range(10001)]
+        imp.append_session(session,ids[:10000])
+        imp.append_session(session,ids[10000:])
+        with mock.patch.object(imp,'_run',return_value={'installed':10001}) as run:
+            result=imp.run_session(session,Job('import'),False,False)
+        self.assertEqual(result['installed'],10001)
+        self.assertEqual(run.call_args.args[0],ids)
+        self.assertFalse(list(imp.staging.iterdir()))
+
+    def test_session_cancel_discards_every_batch_and_validates_session_id(self):
+        imp=self.importer()
+        session=imp.create_session()['session']
+        ids=[self.upload(imp,f'合集/{n}.txt',b'notes') for n in range(3)]
+        with mock.patch('vampm.importer.MAX_IMPORT_FILES',2):
+            imp.append_session(session,ids[:2])
+            imp.append_session(session,ids[2:])
+            imp.discard_session(session)
+        self.assertFalse(list(imp.staging.iterdir()))
+        for invalid in ('../outside','x'*32,None):
+            with self.subTest(invalid=invalid),self.assertRaises(ValueError):
+                imp.append_session(invalid,[ids[0]])
+
+    def test_session_cancel_during_import_keeps_completed_packages(self):
+        imp=self.importer()
+        session=imp.create_session()['session']
+        ids=[self.upload(imp,f'合集/New.Item{n}.1.var',var_bytes(f'New.Item{n}.1')) for n in range(3)]
+        imp.append_session(session,ids)
+        job=Job('import')
+        def move_and_cancel(src,dst,job=None):
+            move_no_replace(src,dst);job.cancel.set()
+        with mock.patch('vampm.importer.move_no_replace',side_effect=move_and_cancel):
+            with self.assertRaises(Cancelled):imp.run_session(session,job,False,False)
+        self.assertEqual(self.c.stats()['packages'],1)
+        self.assertFalse(list(imp.staging.iterdir()))
 
     def test_mixed_invalid_roots_are_skipped_without_blocking_valid_profile(self):
         self.put(deps=['Available.Hair.1']);self.put('Available.Hair.1',deps=['Absent.Asset.1'])

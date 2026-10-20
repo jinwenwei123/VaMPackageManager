@@ -943,5 +943,7 @@
   "配置入口使用完整的 AI 设置页面；也可以跳过，之后随时在“AI 与设置”中配置。": "Continue to the full AI settings page, or skip and configure it later in AI & Settings.",
   "稍后配置，进入主页": "Set up later; go to Home",
   "前往 AI 设置": "Open AI settings",
-  "未选择游戏目录": "No game directory selected"
+  "未选择游戏目录": "No game directory selected",
+  "大批量文件将自动分批登记，并作为同一个任务导入，无需手动拆分。": "Large selections are registered in batches and imported as one task. No manual splitting is needed.",
+  "暂存清理未完成，原文件保留，请检查连接后重试。": "Staging cleanup did not finish. Original files are unchanged; check the connection and retry."
 }

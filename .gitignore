@@ -61,3 +61,6 @@ Desktop.ini
 # Per-game resource storage and temporary transfer journals.
 .DisabledPackages/
 .PackageManagerStorage/
+
+# Local versioned release artifacts; never publish through source Git.
+/releases/

@@ -4,13 +4,13 @@
 
 A local VAR library manager for **Virt-A-Mate (VaM)** on Windows. Organize resources, resolve dependencies, prepare launch profiles, and optionally use AI to describe and explore your collection.
 
-**Version 1.0.0** · **Windows 10 / 11** · [MIT License](LICENSE)
+**Version 1.0.1** · **Windows 10 / 11** · [MIT License](LICENSE)
 
 ![English home page with customizable library cards](docs/images/home-en.png)
 
 *Screenshots show the running application with a synthetic demonstration library. No personal library, credentials, or third-party game assets are shown.*
 
-[Features](#features) · [Interface tour](#interface-tour) · [Getting started](#getting-started) · [AI setup](#ai-setup) · [Storage and backups](#storage-and-backups) · [Development](#development) · [License](#license)
+[Features](#features) · [Interface tour](#interface-tour) · [Getting started](#getting-started) · [AI setup](#ai-setup) · [Storage and backups](#storage-and-backups) · [Development](#development) · [Changelog](#changelog) · [License](#license)
 
 ## Features
 
@@ -21,6 +21,10 @@ A local VAR library manager for **Virt-A-Mate (VaM)** on Windows. Organize resou
 - **Preview file operations:** review planned changes and use operation history to restore supported operations. Cross-drive transfers verify copied content before removing the source.
 - **Use AI when needed:** generate descriptions and tags separately or together, get resource recommendations, and chat with an assistant that retains context. Choose read-only recommendations or allow supported management actions.
 - **Make the interface yours:** customizable home cards, six color palettes, light/dark/system appearance, and English or Simplified Chinese. Language changes affect the UI and newly generated AI content; existing user content and filenames stay unchanged.
+
+### Large imports
+
+Select all supported files or a folder in **Add resources**. Large selections are registered automatically in batches and imported as one task, preserving folder structure and duplicate detection across batches. There is no 10,000-file selection limit. Upload progress covers the entire selection; stopping upload leaves original files unchanged. Cancelling an import keeps files already installed and indexes them.
 
 ## Interface tour
 
@@ -125,12 +129,12 @@ The portable release uses these architecture-specific filenames:
 
 | Archive | Target |
 | --- | --- |
-| `VaMPackageManager-1.0.0-windows-x64.zip` | Windows 10/11 x64; preferred for 64-bit PCs and large libraries |
-| `VaMPackageManager-1.0.0-windows-x86.zip` | Windows 10 32-bit; also runs as a 32-bit process on x64 Windows |
+| `VaMPackageManager-1.0.1-windows-x64.zip` | Windows 10/11 x64; preferred for 64-bit PCs and large libraries |
+| `VaMPackageManager-1.0.1-windows-x86.zip` | Windows 10 32-bit; also runs as a 32-bit process on x64 Windows |
 
-Both packages include Python and require no Python or Node.js installation. Codex CLI remains optional and is not bundled. `tools/prepare_runtime.py` prepares x64 by default; the x86 release uses the corresponding official 32-bit Python embeddable runtime. The matching `VaMPackageManager-1.0.0-SHA256SUMS.txt` contains archive hashes.
+Both packages include Python and require no Python or Node.js installation. Codex CLI remains optional and is not bundled. `tools/prepare_runtime.py` prepares x64 by default; the x86 release uses the corresponding official 32-bit Python embeddable runtime. The matching `VaMPackageManager-1.0.1-SHA256SUMS.txt` contains archive hashes.
 
-Both runtime architectures were tested on Windows 11 x64, including EXE startup and 56 focused checks per architecture. Windows 10 and a native 32-bit OS have not been directly tested. Architecture compatibility refers to this manager; VaM and external AI tools have their own requirements.
+Both runtime architectures were tested on Windows 11 x64, including EXE startup and 66 focused checks per architecture. Windows 10 and a native 32-bit OS have not been directly tested. Architecture compatibility refers to this manager; VaM and external AI tools have their own requirements.
 
 Extract the application into any writable folder. On first launch, a skippable setup dialog lets you choose an existing VaM directory and continue to optional AI settings. The manager never assumes that its parent folder is a game directory. Until you explicitly select a game, only application settings are saved under `data/`; no game package or management folders are created. Skipping is remembered across launches. Add or switch game directories later in **AI & Settings → Game directories**. Existing installations retain their saved directory and data.
 
@@ -193,6 +197,22 @@ The browser suite invokes `python3`; ensure that command resolves to Python 3.13
 Browser assets are already vendored. After intentionally updating their locked dependencies, run `python tools/prepare_web.py` and retain upstream license files. After editing translation catalogs, run `python tools/build_locales.py`.
 
 Ordinary unit/browser tests use temporary fixtures and do not make paid AI calls. `tests/live_*.py` and historical `tests/windows_*.js` probes are separate manual tools; review their requirements before running them. See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution and testing guidance.
+
+## Changelog
+
+<details>
+<summary>2026-10-20 · v1.0.1 · Changelog: Large import fix</summary>
+
+### Fixed
+
+- Removed the 10,000-file selection limit in Add resources. File IDs are registered automatically in bounded batches and processed as one import task.
+- Preserved folder structure, cross-batch duplicate detection, overall upload progress and cancellation cleanup.
+
+### Changed
+
+- Store local release artifacts under `releases/<version>/`, excluded from Git and source archives.
+
+</details>
 
 ## Support and contributing
 

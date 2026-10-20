@@ -15,6 +15,7 @@ from .util import (Cancelled, atomic_json, read_json, require_game_closed,
 
 ASSET_EXTENSIONS = {'.jpg','.jpeg','.png','.webp','.gif','.bmp','.txt','.md','.pdf','.json'}
 MAX_IMPORT_FILES = 10000
+# Bounds each registration request, not the total size of an import session.
 
 
 class Importer:
@@ -86,6 +87,53 @@ class Importer:
                 (self.staging/(uid+ext)).unlink(missing_ok=True)
         return {'discarded':len(ids)}
 
+    def _session_path(self,session):
+        if not isinstance(session,str) or len(session)!=32 or any(c not in '0123456789abcdef' for c in session):
+            raise ValueError('导入会话标识无效。')
+        return self.staging/('session-'+session+'.jsonl')
+
+    def create_session(self):
+        self.c.storage.ensure('imports')
+        session=uuid.uuid4().hex
+        self._session_path(session).touch(exist_ok=False)
+        return {'session':session}
+
+    def append_session(self,session,ids):
+        ids=self.validate_ids(ids)
+        path=self._session_path(session)
+        # r+ never recreates an already consumed/cancelled session.
+        with path.open('r+',encoding='utf-8') as f:
+            f.seek(0,os.SEEK_END)
+            f.write(json.dumps(ids)+'\n')
+            f.flush()
+            os.fsync(f.fileno())
+        return {'registered':len(ids)}
+
+    def _session_ids(self,session):
+        ids=[]
+        with self._session_path(session).open(encoding='utf-8') as f:
+            for line in f:
+                ids.extend(self.validate_ids(json.loads(line)))
+        return list(dict.fromkeys(ids))
+
+    def discard_session(self,session):
+        self.c.storage.check_pending()
+        path=self._session_path(session)
+        if not path.exists():return {'discarded':0}
+        ids=self._session_ids(session)
+        for start in range(0,len(ids),MAX_IMPORT_FILES):
+            self.discard(ids[start:start+MAX_IMPORT_FILES])
+        path.unlink()
+        return {'discarded':len(ids)}
+
+    def run_session(self,session,job,use_ai=True,find=True):
+        ids=self._session_ids(session)
+        if not ids:raise ValueError('导入会话中没有文件。')
+        try:
+            return self._run(ids,job,use_ai,find)
+        finally:
+            self._session_path(session).unlink(missing_ok=True)
+
     def _folder_roots(self,metas):
         folders={}
         reserved=set()
@@ -105,7 +153,9 @@ class Importer:
         return folders
 
     def run(self,ids,job,use_ai=True,find=True):
-        ids=self.validate_ids(ids)
+        return self._run(self.validate_ids(ids),job,use_ai,find)
+
+    def _run(self,ids,job,use_ai=True,find=True):
         result={'created':stamp(),'items':[],'installed':0,'attachments':0,'skipped':0,'failed':0,
                 'missing':0,'ai_error':'','source_error':'','attachment_folders':[]}
         staged,assets,labels=[],[],{}
@@ -260,4 +310,5 @@ class Importer:
             atomic_json(log,result)
             self.c.index_files(installed)
             disposable = [uid for uid in ids if uid not in retained]
-            if disposable: self.discard(disposable)
+            for start in range(0,len(disposable),MAX_IMPORT_FILES):
+                self.discard(disposable[start:start+MAX_IMPORT_FILES])

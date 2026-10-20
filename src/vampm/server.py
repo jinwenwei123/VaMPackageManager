@@ -397,8 +397,16 @@ class Application:
         if path == '/api/scan': return start('深度扫描' if data.get('deep') else '增量扫描',lambda j:self.scan(j,bool(data.get('deep'))))
         if path == '/api/import':
             self.ops.check_pending()
+            run=self.importer.run_session if data.get('session') else self.importer.run
             return start('导入资源',lambda j:self.sync_library(
-                self.importer.run(data.get('ids',[]),j,bool(data.get('ai')),bool(data.get('find'))),j))
+                run(data.get('session') or data.get('ids',[]),j,bool(data.get('ai')),bool(data.get('find'))),j))
+        if path == '/api/import-session':
+            self.ops.check_pending()
+            return self.importer.create_session()
+        if path == '/api/import-session/append':
+            self.ops.check_pending()
+            return self.importer.append_session(data.get('session'),data.get('ids'))
+        if path == '/api/import-session/discard':return self.importer.discard_session(data.get('session'))
         if path == '/api/discard-import':return self.importer.discard(data.get('ids',[]))
         if path == '/api/audit': return start('重复包内容校验',self.c.duplicate_audit)
         if path == '/api/package-repairs/analyze': return start('AI 分析包异常',lambda j:self.package_repairs.analyze(j,bool(data.get('refresh'))))

@@ -379,27 +379,35 @@ function importSelection(){
 }
 function showImportSelection(){
   const s=importSelection();
-  $('#import-selection').textContent=tr`已选择 ${s.packages} 个 VAR、${s.attachments} 个附件，共 ${bytes(s.files.reduce((n,f)=>n+f.size,0))}。${s.ignored?tr`已忽略 ${s.ignored} 个不支持的文件。`:''}${s.files.length>importOptions.max_files?tr('一次最多 10,000 个文件，请分批导入。'):''}`;
+  $('#import-selection').textContent=tr`已选择 ${s.packages} 个 VAR、${s.attachments} 个附件，共 ${bytes(s.files.reduce((n,f)=>n+f.size,0))}。${s.ignored?tr`已忽略 ${s.ignored} 个不支持的文件。`:''}${s.files.length>importOptions.max_files?tr('大批量文件将自动分批登记，并作为同一个任务导入，无需手动拆分。'):''}`;
 }
 async function importStart(){
   const {files}=importSelection();if(!files.length)throw Error(tr('请选择 VAR 文件，或含支持文件的文件夹。'));
-  if(files.length>importOptions.max_files)throw Error(tr('一次最多导入 10,000 个文件，请分批选择。'));
   const ai=$('#import-ai').checked,find=$('#import-find').checked;
   const progress=$('#upload-progress');progress.classList.remove('hidden');
   $$('button,input',$('#dialog')).forEach(b=>b.disabled=true);
   const cancel=$('[data-action="import-cancel"]');cancel.classList.remove('hidden');cancel.disabled=false;
-  const transfer=importTransfer={cancelled:false},ids=[];let completed=0,started=false;
+  const transfer=importTransfer={cancelled:false},ids=[];let completed=0,started=false,session=null;
+  const batchSize=Math.min(1000,importOptions.max_files);
   const total=files.reduce((n,f)=>n+f.size,0);
   try{
+    session=(await api('import-session',{})).session;
     for(let i=0;i<files.length;i++){
       if(transfer.cancelled)break;
       const update=loaded=>{if(!transfer.cancelled)progress.textContent=tr`正在复制 ${i+1}/${files.length}：${files[i].name} · ${bytes(completed+loaded)} / ${bytes(total)}`;};
       update(0);const out=await VaMPMImports.upload(files[i],token,update);ids.push(out.id);completed+=files[i].size;
+      if(ids.length>=batchSize||i===files.length-1){
+        await api('import-session/append',{session,ids});ids.length=0;
+      }
     }
-    if(!transfer.cancelled){await startJob('import',{ids,ai,find});started=true;closeModal();}
+    if(!transfer.cancelled){await startJob('import',{session,ai,find});started=true;closeModal();}
     else progress.textContent=tr('已停止上传，正在清理暂存文件…');
   }finally{
-    if(!started&&ids.length)await api('discard-import',{ids}).catch(()=>toast(tr('暂存清理未完成，过期文件会在下次启动时清理。'),true));
+    if(!started){
+      const cleanupError=()=>toast(tr('暂存清理未完成，原文件保留，请检查连接后重试。'),true);
+      if(ids.length)await api('discard-import',{ids}).catch(cleanupError);
+      if(session)await api('import-session/discard',{session}).catch(cleanupError);
+    }
     if(!started){$$('button,input',$('#dialog')).forEach(b=>b.disabled=false);cancel.classList.add('hidden');if(transfer.cancelled)progress.textContent=tr('已停止，原文件和资源库保持不变。');}
     importTransfer=null;
   }

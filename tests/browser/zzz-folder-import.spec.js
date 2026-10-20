@@ -33,12 +33,22 @@ test('missing dependencies can activate; folder import preserves inactive mode, 
   await expect(page.locator('#job-panel')).toBeHidden({timeout:15000});
   expect((await get('package?key=demo.needdependency.1')).active).toBe(true);
   const activeBeforeImport=paths();expect(activeBeforeImport.length).toBe(1);
+  // Force several registration batches through the real server with a small fixture.
+  await page.route('**/api/import-options',async route=>{
+    const response=await route.fetch(),options=await response.json();
+    await route.fulfill({response,json:{...options,max_files:2}});
+  });
+  const batches=[];
+  page.on('request',r=>{
+    if(r.url().endsWith('/api/import-session/append'))batches.push(r.postDataJSON().ids.length);
+  });
   await page.getByRole('button',{name:/⊞资源库|⊞ 资源库/}).click();
   await page.getByRole('button',{name:'＋ 添加资源'}).click();
   await expect(dialog).toContainText('.DisabledPackages/包管家导入/');
   await page.locator('#import-folder').setInputFiles(source);
   await expect(page.locator('#import-selection')).toContainText('1 个 VAR、4 个附件');
   await expect(page.locator('#import-selection')).toContainText('已忽略 1');
+  await expect(page.locator('#import-selection')).toContainText('自动分批登记');
   await page.locator('#import-ai').uncheck();await page.locator('#import-find').uncheck();
   await page.screenshot({path:'test-results/文件夹导入-选择与目的地.png'});
   // Cancel during a streamed upload: finish the current file, discard it, import nothing.
@@ -53,6 +63,7 @@ test('missing dependencies can activate; folder import preserves inactive mode, 
   await page.getByRole('button',{name:'导入并分析'}).click();
   await expect(page.getByRole('heading',{name:'资源导入完成'})).toBeVisible({timeout:15000});
   await expect(dialog).toContainText('VAR 成功 1 个，附件复制 4 个');
+  expect(batches.slice(-3)).toEqual([2,2,1]);
   await expect(dialog).toContainText('已按当前方案同步启停');
   expect(paths()).toEqual(activeBeforeImport);
   const imported=await get('package?key=folder.newlook.1');expect(imported.active).toBe(false);
