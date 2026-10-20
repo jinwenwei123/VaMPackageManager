@@ -8,6 +8,7 @@ import webbrowser
 from pathlib import Path
 
 from vampm.server import Application, serve
+from vampm.game_directories import GameDirectories
 from vampm.util import atomic_json, read_json
 
 
@@ -38,7 +39,8 @@ def main():
     parser.add_argument('--no-browser',action='store_true')
     args=parser.parse_args()
     home=Path(args.home).resolve() if args.home else Path(__file__).resolve().parent.parent
-    game=Path(args.game).resolve() if args.game else home.parent
+    # Only an explicit CLI path or a saved registry may select a game.
+    game=GameDirectories.game_path(args.game) if args.game else None
     data=home/'data'
     lock=lock_instance(data)
     if lock is None:

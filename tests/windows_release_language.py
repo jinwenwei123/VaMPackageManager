@@ -47,12 +47,19 @@ try:
     status = json.loads(request('/api/status'))
     assert status['language'] == {'language': 'en'}
     assert status['version'] == '1.0.0'
+    assert status['workspace']['id'] is None
+    assert status['onboarding']['stage'] == 'game'
+    assert status['game_directories']['items'] == []
+    assert not (root / '.PackageManagerStorage').exists()
+    assert b'firstRun' in request('/onboarding.js')
+    assert json.loads(request('/api/onboarding', {'action': 'skip_game'}))['stage'] == 'ai'
+    assert json.loads(request('/api/onboarding', {'action': 'finish'}))['stage'] == 'done'
     assert b'"en"' in request('/language-config.js')
     assert b'VaMPMI18n' in request('/i18n.js')
     assert b'VaMPMEnglish' in request('/locales/en.js')
     assert json.loads(request('/api/language', {'language': 'zh-CN'}))['language'] == 'zh-CN'
     assert (root / 'AddonPackages/中文资源目录').is_dir()
-    print('English-named Windows EXE: startup, language assets, settings and original folder names OK')
+    print('Windows EXE: no implicit game, skippable setup, language assets and original folders OK')
 finally:
     if state and statefile.exists():
         request('/api/shutdown', {})

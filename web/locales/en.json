@@ -930,5 +930,18 @@
   "{0} 封面": "{0} cover",
   "新生成的简介、标签和助手回复使用所选语言；文件与文件夹名称保持不变。": "New summaries, tags and assistant replies use the selected language. File and folder names stay unchanged.",
   "切换后自动保存，并刷新已打开的管家页面；请先保存编辑内容。": "Saves automatically and refreshes open manager pages. Save your edits before switching.",
-  "基础收藏": "Base favorites"
+  "基础收藏": "Base favorites",
+  "欢迎使用 VaM 包管家": "Welcome to VaM Package Manager",
+  "第 1 步：选择游戏目录": "Step 1: Choose a game directory",
+  "程序不会自动把解压位置当作游戏目录。请选择已有的 VaM 根目录，其中应包含 AddonPackages。": "The extraction location is not automatically treated as a game directory. Choose an existing VaM root containing AddonPackages.",
+  "确认后仅在所选游戏目录创建管理文件夹，不扫描或移动资源。可跳过，稍后到设置添加。": "Confirmation creates management folders only inside the selected game directory. It does not scan or move resources. You can skip this and add a directory in settings later.",
+  "暂不选择目录": "Choose a directory later",
+  "保存目录并继续": "Save directory and continue",
+  "设置 AI 助手（可选）": "Set up AI assistance (optional)",
+  "第 2 步：配置 AI 服务": "Step 2: Configure an AI service",
+  "可选择 Codex、DeepSeek 或其他兼容 API，设置模型与自己的账号或密钥。AI 不是管理资源的必需条件。": "Choose Codex, DeepSeek or another compatible API, then configure a model and your own account or key. AI is optional for library management.",
+  "配置入口使用完整的 AI 设置页面；也可以跳过，之后随时在“AI 与设置”中配置。": "Continue to the full AI settings page, or skip and configure it later in AI & Settings.",
+  "稍后配置，进入主页": "Set up later; go to Home",
+  "前往 AI 设置": "Open AI settings",
+  "未选择游戏目录": "No game directory selected"
 }

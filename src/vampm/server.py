@@ -13,6 +13,7 @@ from pathlib import Path
 from . import __version__
 from .catalog import Catalog
 from .game_directories import GameDirectories, WorkspaceChanged
+from .onboarding import Onboarding
 from .home_layout import HomeLayout
 from .quarantine import Quarantine
 from . import library_paths
@@ -42,6 +43,7 @@ class Application:
             self.workspace_lock = threading.RLock()
             self.folder_picker_lock = threading.Lock()
             self.directories = GameDirectories(home, game)
+            self.onboarding = Onboarding(self.directories)
             self.language = Language(self.directories.data)
             self.workspace_epoch = secrets.token_hex(16)
             self.active = self
@@ -128,11 +130,12 @@ class Application:
             raise ValueError('此游戏目录当前不可用，请检查路径或磁盘连接；已有数据保留。')
         destination = host.directories.location(ident)
         # New directories inherit connection/appearance preferences once, never resource data.
-        if not destination.exists():
-            destination.mkdir(parents=True)
+        if not destination.exists() or current.workspace_id is None:
+            destination.mkdir(parents=True, exist_ok=True)
             for name in ('ai-settings.json', 'appearance.json'):
                 source = current.c.data / name
-                if source.is_file(): shutil.copy2(source, destination / name)
+                if source.is_file() and not (destination / name).exists():
+                    shutil.copy2(source, destination / name)
         candidate = Application(target['path'], current.c.home, _host=host, _ident=ident)
         try:
             host.directories.activate(ident)
@@ -215,7 +218,7 @@ class Application:
                 host.check_workspace(scope, write=True)
                 if host.closing.is_set(): raise ValueError('包管家正在退出，请重新打开。')
                 epoch = host.workspace_epoch
-                initial = data.get('path') or str(host.active.c.game)
+                initial = data.get('path') or (str(host.active.c.game) if host.active.workspace_id else '')
                 if not isinstance(initial, str): raise ValueError('目录路径无效。')
             if not host.folder_picker_lock.acquire(blocking=False):
                 raise ValueError('文件夹选择窗口已打开，请先选择或取消。')
@@ -236,6 +239,23 @@ class Application:
                     host.active.ops.check_pending()
                 if path not in ('/api/shutdown', '/api/cancel', '/api/game-storage/migrate', '/api/agent/stop'):
                     host.active.c.storage.check_pending()
+            if path == '/api/onboarding':
+                action = data.get('action')
+                if action == 'finish': return host.onboarding.set('done')
+                if action == 'skip_game': return host.onboarding.set('ai')
+                if action == 'select_game':
+                    game = host.directories.game_path(data.get('path'))
+                    item = next((p for p in host.directories.value['items']
+                                 if not p.get('archived') and host.directories.path_key(p['path']) ==
+                                 host.directories.path_key(game)), None)
+                    if item is None:
+                        host.directories.register(str(game), data.get('name', ''))
+                        item = next(p for p in host.directories.value['items']
+                                    if not p.get('archived') and host.directories.path_key(p['path']) ==
+                                    host.directories.path_key(game))
+                    host.switch_workspace(item['id'])
+                    return host.onboarding.set('ai')
+                raise ValueError('首次设置操作无效。')
             if path == '/api/game-directories/add':
                 if data.get('active_folder', 'AddonPackages') != 'AddonPackages':
                     raise ValueError('启用文件夹固定为 AddonPackages，不能修改。')
@@ -257,12 +277,14 @@ class Application:
         if self.closing.is_set() and path != '/api/status':
             raise ValueError('包管家正在退出，请重新双击 EXE 打开。')
         if path == '/api/game-directories': return self.directories.public()
+        if path == '/api/onboarding': return self.host.onboarding.get()
         if path == '/api/home-layout': return self.home_layout.get()
         if path == '/api/status':
             stats = self.c.stats()
             if not self.workspace_id: stats = {**stats, 'game': '', 'disabled_folder': ''}
             return {'workspace': self.workspace_info(), 'game_directories': self.directories.public(),
-                    'home_layout': self.home_layout.get(), 'version':__version__, 'busy':self.jobs.busy(),'stats':stats,
+                    'home_layout': self.home_layout.get(), 'onboarding':self.host.onboarding.get(),
+                    'version':__version__, 'busy':self.jobs.busy(),'stats':stats,
                     'appearance':self.appearance.get(), 'language':self.language.get(),
                     'library_preferences':self.library_preferences.get(),
                     'revision':self.c.revision,
@@ -498,7 +520,7 @@ def serve(app,port=0):
                 files={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/style.css':'style.css','/favicon.svg':'favicon.svg',
                        '/appearance.js':'appearance.js','/themes.css':'themes.css',
                        '/i18n.js':'i18n.js','/locales/en.js':'locales/en.js',
-                       '/home.js':'home.js','/home.css':'home.css','/workspaces.js':'workspaces.js','/quarantine.js':'quarantine.js',
+                       '/home.js':'home.js','/home.css':'home.css','/workspaces.js':'workspaces.js','/onboarding.js':'onboarding.js','/quarantine.js':'quarantine.js',
                        '/pagination.js':'pagination.js','/pagination.css':'pagination.css','/models.js':'models.js','/cards.js':'cards.js',
                        '/activation.js':'activation.js','/imports.js':'imports.js','/selection.js':'selection.js','/selection.css':'selection.css',
                        '/chat-presets.js':'chat-presets.js','/chat-presets.css':'chat-presets.css','/chat-composer.js':'chat-composer.js',

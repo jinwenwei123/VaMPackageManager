@@ -19,15 +19,17 @@ class GameDirectories:
         self.file = self.data / 'game-directories.json'
         self.created = not self.file.exists()
         if self.created:
-            path = str(Path(game).resolve())
-            self.value = {'version': 1, 'current': 'original', 'items': [
-                {'id': 'original', 'name': Path(path).name or '原游戏目录', 'path': path}]}
+            self.value = {'version': 1, 'current': None, 'items': []}
+            if game is not None:
+                path = str(Path(game).resolve())
+                self.value.update(current='original', items=[
+                    {'id': 'original', 'name': Path(path).name or '原游戏目录', 'path': path}])
             self._save(self.value)
         else:
             self.value = read_json(self.file)
             value = self.value
             if (not isinstance(value, dict) or value.get('version') != 1
-                    or not isinstance(value.get('items'), list) or not value['items']):
+                    or not isinstance(value.get('items'), list)):
                 raise ValueError('游戏目录登记文件无效；原数据保留，请恢复 data/game-directories.json。')
             ids, paths = set(), set()
             for item in value['items']:
@@ -43,7 +45,7 @@ class GameDirectories:
                 ids.add(item['id'])
                 if not item.get('archived'): paths.add(key)
             current = value.get('current')
-            if ('current' not in value or 'original' not in ids or (current is not None and current not in ids)
+            if ('current' not in value or (ids and 'original' not in ids) or (current is not None and current not in ids)
                     or any(p['id'] == current and p.get('archived') for p in value['items'])):
                 raise ValueError('当前游戏目录登记无效，未改动已有数据。')
 
@@ -105,7 +107,8 @@ class GameDirectories:
             self.save_binding(item)
             return self.public()
         self.check_location(path, disabled_folder=disabled_folder)
-        item = {'id': uuid.uuid4().hex, 'name': self.unique_name(name or path.name), 'path': str(path),
+        item = {'id': uuid.uuid4().hex if self.value['items'] else 'original',
+                'name': self.unique_name(name or path.name), 'path': str(path),
                 'disabled_folder': disabled_folder}
         self._save({**self.value, 'items': [*self.value['items'], item]})
         return self.public()

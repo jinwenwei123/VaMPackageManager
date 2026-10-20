@@ -132,12 +132,12 @@ Both packages include Python and require no Python or Node.js installation. Code
 
 Both runtime architectures were tested on Windows 11 x64, including EXE startup and 56 focused checks per architecture. Windows 10 and a native 32-bit OS have not been directly tested. Architecture compatibility refers to this manager; VaM and external AI tools have their own requirements.
 
-Placing the application folder directly inside a VaM root lets the launcher discover that root initially. Additional game directories can be added in **AI & Settings → Game directories**.
+Extract the application into any writable folder. On first launch, a skippable setup dialog lets you choose an existing VaM directory and continue to optional AI settings. The manager never assumes that its parent folder is a game directory. Until you explicitly select a game, only application settings are saved under `data/`; no game package or management folders are created. Skipping is remembered across launches. Add or switch game directories later in **AI & Settings → Game directories**. Existing installations retain their saved directory and data.
 
 ### First session
 
 1. Close VaM before operations that move resources or change activation.
-2. Select the intended game directory and choose **Update index**. Deep scanning also checks references inside supported package files.
+2. Select the intended game directory in the setup dialog or settings, then choose **Update index**. Deep scanning also checks references inside supported package files.
 3. Browse resources, inspect dependencies, and add favorites. Configure AI only if you want its optional features.
 4. Create a launch profile, review its activation preview, and apply it. Saving a profile alone does not activate it.
 5. Launch VaM after file operations finish. Use **History** for supported restoration, or **Duplicates → Quarantine** to inspect isolated copies.

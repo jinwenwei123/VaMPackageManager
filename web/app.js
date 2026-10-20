@@ -608,7 +608,7 @@ $('#drawer-backdrop').addEventListener('click',e=>{if(e.target.id==='drawer-back
 $('#dialog').addEventListener('cancel',e=>{if(importTransfer)e.preventDefault();});
 document.addEventListener('keydown',e=>{if(e.target.matches('.package-row[data-key],.recommendation-card[data-key]')&&['Enter',' '].includes(e.key)){e.preventDefault();detail(e.target.dataset.key).catch(err=>toast(err.message,true));return;}if(e.key==='Escape')closeDrawer();if(e.target.id==='chat-input'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendChat().catch(err=>toast(err.message,true));}});
 (async()=>{
-  try{const s=await refresh();s.jobs.filter(j=>j.status!=='running').forEach(j=>state.seenJobs.add(j.id));await render();poll();}
+  try{const s=await refresh();s.jobs.filter(j=>j.status!=='running').forEach(j=>state.seenJobs.add(j.id));await render();firstRun.start(s);poll();}
   catch(e){$('#main').innerHTML=empty(tr('请通过 EXE 打开包管家'),esc(e.message)+ui('<br>双击工具目录中的「VaMPackageManager.exe」。'));}
 })();
 

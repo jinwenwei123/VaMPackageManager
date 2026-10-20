@@ -15,7 +15,7 @@ function adoptWorkspace(status){
   state.workspace=next;state.directories=status.game_directories;
   paintGameStorage(status.busy||status.agent_busy);
   window.VaMPMWorkspace={id:next.id,epoch:next.epoch,reload:reloadWorkspace};
-  const label=$('#workspace-name');if(label){label.textContent=next.name;label.title=next.path;}
+  const label=$('#workspace-name');if(label){label.textContent=next.id?next.name:tr(next.name);label.title=next.path;}
   $('#workspace-offline')?.classList.toggle('hidden',next.available!==false);
   const notice=$('#workspace-offline span');if(notice)notice.textContent=next.id?tr('当前游戏目录不可用，已有数据保留。请连接磁盘或重新绑定位置。'):tr('尚未选择游戏目录。请添加、恢复或选择目录，已移除目录的数据仍保留。');
 }
@@ -66,8 +66,8 @@ function validateDirectoryForm(form){
   return !!name&&!duplicate;
 }
 document.addEventListener('input',event=>{
-  const form=event.target.closest('#directory-add-form,#directory-rename-form,#directory-rebind-form');if(!form)return;
-  if(form.id==='directory-add-form'&&event.target.name==='path'){
+  const form=event.target.closest('#directory-add-form,#directory-rename-form,#directory-rebind-form,#onboarding-directory-form');if(!form)return;
+  if(['directory-add-form','onboarding-directory-form'].includes(form.id)&&event.target.name==='path'){
     const name=form.elements.namedItem('name'),base=directoryPathName(event.target.value);
     if(!name.value.trim()||name.value===name.dataset.autoName)name.value=base;
     name.dataset.autoName=base;

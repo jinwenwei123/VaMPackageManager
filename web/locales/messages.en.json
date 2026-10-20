@@ -534,5 +534,7 @@
   "已加入 / 插件": "Added / Plugins",
   "已加入 / 环境道具": "Added / Environments & props",
   "已加入 / 姿势动作": "Added / Poses & animations",
-  "已加入 / 其他": "Added / Other"
+  "已加入 / 其他": "Added / Other",
+  "首次设置记录无效；原数据保留。": "The first-run setup record is invalid. Existing data has been preserved.",
+  "首次设置操作无效。": "Invalid first-run setup action."
 }
